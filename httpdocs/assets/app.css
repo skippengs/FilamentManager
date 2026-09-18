@@ -46,6 +46,12 @@
 
     --display: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
     --body:    system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+
+    /* Tells the browser which way to paint the things we do not draw
+       ourselves: the list a <select> drops down, scrollbars, the date
+       picker. Without it those stay light and a dark page gets a white
+       popup with unreadable grey text in it. */
+    color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -77,6 +83,8 @@
 
         --shadow:      0 1px 2px rgba(0, 0, 0, .5), 0 6px 20px rgba(0, 0, 0, .35);
         --shadow-lift: 0 2px 6px rgba(0, 0, 0, .5), 0 20px 46px rgba(0, 0, 0, .55);
+
+        color-scheme: dark;
     }
 }
 
@@ -359,17 +367,29 @@ img { max-width: 100%; display: block; }
     color: var(--text-faint);
 }
 
+/*
+ * The dropdown a select opens is drawn by the browser, and it takes its
+ * colours from the select itself. A transparent background there leaves the
+ * options dark-on-dark, so this names a real colour even though the pill
+ * behind it is the same one.
+ */
 .filter select {
     border: 0;
     padding: 3px 6px;
     border-radius: 999px;
-    background: transparent;
+    background-color: var(--surface);
     color: var(--text);
     font: inherit;
     font-size: 13px;
     font-weight: 550;
     cursor: pointer;
     max-width: 150px;
+}
+
+.filter select option,
+.field select option {
+    background-color: var(--surface);
+    color: var(--text);
 }
 
 .filter select:focus { outline: none; }
@@ -1041,6 +1061,28 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .segment input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ---------- the box for a value not in the dropdown yet ---------- */
+
+.otherfield { margin-top: 8px; }
+
+.otherfield input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    background: var(--bg-tint);
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+}
+
+.otherfield input:focus {
+    outline: none;
+    border-style: solid;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
 
 /* ---------- colour picker ---------- */
 

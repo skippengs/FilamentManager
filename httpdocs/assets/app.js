@@ -242,6 +242,36 @@
      * The add / edit form
      * ------------------------------------------------------------------ */
 
+    /*
+     * Brand and material are dropdowns, with a text box that only appears
+     * when you pick "Something else". Phones give a dropdown a proper
+     * full-height picker, which a datalist on a text field never got.
+     */
+    function initOtherFields() {
+        $$('select[data-other]').forEach(function (select) {
+            var wrap = select.parentNode.querySelector('[data-other-field]');
+            if (!wrap) { return; }
+
+            var input = wrap.querySelector('input');
+
+            function apply(focus) {
+                var isOther = select.value === '__other__';
+                wrap.hidden = !isOther;
+
+                // Required only while it is the field actually being used,
+                // otherwise the browser blocks a submit over a hidden box.
+                if (input) {
+                    input.required = isOther;
+                    if (isOther && focus) { input.focus(); }
+                    if (!isOther) { input.value = ''; }
+                }
+            }
+
+            select.addEventListener('change', function () { apply(true); });
+            apply(false);
+        });
+    }
+
     function initColorField() {
         var picker = $('[data-color-picker]');
         var textIn = $('[data-color-text]');
@@ -417,6 +447,7 @@
         initSearch();
         initPhotos();
         initQuick();
+        initOtherFields();
         initColorField();
         initRange();
         initStatusLink();

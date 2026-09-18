@@ -46,6 +46,57 @@ function uploadedFiles(string $field): array
     return $files;
 }
 
+/**
+ * A dropdown of the values already in use, with a text box for a new one.
+ *
+ * This used to be a text field with a <datalist> behind it. On a phone that
+ * is miserable: Android shows a cramped list you cannot scroll properly and
+ * iOS ignores the datalist altogether, leaving you to type the material by
+ * hand every time. A plain <select> is what phones open a proper picker for.
+ *
+ * The text box only counts when "Something else" is picked. It is hidden by
+ * JavaScript, and the <noscript> rule further down puts it back for anyone
+ * without it.
+ */
+function choiceField(string $name, array $options, string $current, string $placeholder): void
+{
+    $isOther = $current !== '' && !in_array($current, $options, true);
+    $otherId = $name . '_other';
+    ?>
+    <select id="<?= esc($name) ?>" name="<?= esc($name) ?>" required data-other="#<?= esc($otherId) ?>">
+        <?php /* Without this a new spool would silently take whatever sorts first. */ ?>
+        <option value="" disabled <?= $current === '' ? 'selected' : '' ?>>Choose&hellip;</option>
+        <?php foreach ($options as $option): ?>
+            <option value="<?= esc($option) ?>" <?= !$isOther && $current === $option ? 'selected' : '' ?>>
+                <?= esc($option) ?>
+            </option>
+        <?php endforeach; ?>
+        <option value="__other__" <?= $isOther ? 'selected' : '' ?>>Something else&hellip;</option>
+    </select>
+
+    <div class="otherfield" data-other-field <?= $isOther ? '' : 'hidden' ?>>
+        <input type="text" id="<?= esc($otherId) ?>" name="<?= esc($otherId) ?>"
+               autocapitalize="words" placeholder="<?= esc($placeholder) ?>"
+               value="<?= $isOther ? esc($current) : '' ?>">
+    </div>
+    <?php
+}
+
+/**
+ * Reads a field made by choiceField: the dropdown, unless it says the value
+ * is something new and the box next to it holds the real answer.
+ */
+function choiceValue(string $name): string
+{
+    $picked = trim((string)($_POST[$name] ?? ''));
+
+    if ($picked === '__other__') {
+        return trim((string)($_POST[$name . '_other'] ?? ''));
+    }
+
+    return $picked;
+}
+
 /** '#1A2B3C', '1a2b3c' and '' all end up the way the database wants them. */
 function normalizeHex(string $raw): ?string
 {
@@ -154,8 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             /* --- save --- */
             $id        = (int)($_POST['id'] ?? 0);
-            $brand     = trim((string)($_POST['brand'] ?? ''));
-            $material  = trim((string)($_POST['material'] ?? ''));
+            $brand     = choiceValue('brand');
+            $material  = choiceValue('material');
             $colorName = trim((string)($_POST['color_name'] ?? ''));
             $colorHex  = normalizeHex((string)($_POST['color_hex'] ?? ''));
             $diameter  = (string)($_POST['diameter'] ?? '1.75');
@@ -169,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notes     = trim((string)($_POST['notes'] ?? ''));
 
             if ($brand === '') {
-                throw new RuntimeException('Fill in the brand. Put "unknown" if the spool has no name on it.');
+                throw new RuntimeException('Pick a brand. Choose "unknown" if the spool has no name on it.');
             }
             if ($material === '') {
                 throw new RuntimeException('Fill in the material, for example PLA or PETG.');
@@ -287,8 +338,8 @@ if ($id > 0 && $item === null) {
 // A failed save should not throw away what you typed.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error !== null) {
     $item = array_merge($item ?? ['photos' => []], [
-        'brand'         => (string)($_POST['brand'] ?? ''),
-        'material'      => (string)($_POST['material'] ?? ''),
+        'brand'         => choiceValue('brand'),
+        'material'      => choiceValue('material'),
         'color_name'    => (string)($_POST['color_name'] ?? ''),
         'color_hex'     => (string)($_POST['color_hex'] ?? ''),
         'diameter'      => (string)($_POST['diameter'] ?? '1.75'),
@@ -327,6 +378,12 @@ $photos = $item['photos'] ?? [];
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
+
+<noscript>
+    <!-- The box for a brand or material that is not in the list yet is
+         normally shown and hidden by script. Without script, leave it out. -->
+    <style>[data-other-field][hidden] { display: block; }</style>
+</noscript>
 </head>
 <body>
 
@@ -371,21 +428,13 @@ $photos = $item['photos'] ?? [];
         <div class="row">
             <div class="field">
                 <label for="brand">Brand</label>
-                <input type="text" id="brand" name="brand" required list="brandlist"
-                       autocapitalize="words" value="<?= esc($v('brand')) ?>">
-                <datalist id="brandlist">
-                    <?php foreach ($brands as $b): ?><option value="<?= esc($b) ?>"><?php endforeach; ?>
-                </datalist>
-                <p class="field-hint">No name on the spool? Write "unknown" and add a photo below.</p>
+                <?php choiceField('brand', $brands, $v('brand'), 'Type the brand name'); ?>
+                <p class="field-hint">No name on the spool? Pick "unknown" and add a photo below.</p>
             </div>
 
             <div class="field">
                 <label for="material">Material</label>
-                <input type="text" id="material" name="material" required list="materiallist"
-                       value="<?= esc($v('material', 'PLA')) ?>">
-                <datalist id="materiallist">
-                    <?php foreach ($mats as $m): ?><option value="<?= esc($m) ?>"><?php endforeach; ?>
-                </datalist>
+                <?php choiceField('material', $mats, $v('material', 'PLA'), 'Type the material'); ?>
             </div>
         </div>
 
