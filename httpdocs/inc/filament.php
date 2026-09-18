@@ -25,8 +25,6 @@ const BRAND_SUGGESTIONS = [
     'Elegoo', 'Creality', 'Anycubic', 'Fillamentum', 'Extrudr', '123-3D',
     'AzureFilm', 'Formfutura', 'Spectrum', 'Eryone', 'Jayo', 'Hatchbox',
     'Makeroad',
-    // For the spools with nothing printed on them at all.
-    'unknown',
 ];
 
 const STATUSES = [

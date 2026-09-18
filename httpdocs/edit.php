@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notes     = trim((string)($_POST['notes'] ?? ''));
 
             if ($brand === '') {
-                throw new RuntimeException('Pick a brand. Choose "unknown" if the spool has no name on it.');
+                throw new RuntimeException('Pick a brand, or add a new one with "Something else".');
             }
             if ($material === '') {
                 throw new RuntimeException('Fill in the material, for example PLA or PETG.');
@@ -429,7 +429,10 @@ $photos = $item['photos'] ?? [];
             <div class="field">
                 <label for="brand">Brand</label>
                 <?php choiceField('brand', $brands, $v('brand'), 'Type the brand name'); ?>
-                <p class="field-hint">No name on the spool? Pick "unknown" and add a photo below.</p>
+                <p class="field-hint">
+                    Nothing printed on the spool itself? Add a photo below, so you can
+                    still tell which one it is in the cabinet.
+                </p>
             </div>
 
             <div class="field">
