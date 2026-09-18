@@ -1,0 +1,50 @@
+# Everything over https
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# HSTS: tell the browser not to bother trying http at all. Saves the
+# redirect and stops an old cached http page from showing up as insecure.
+#
+# max-age is deliberately one day. Once everything has run well for a while,
+# raise it to 31536000 (a year). Note that while max-age is running the
+# browser refuses http for this domain, so if you lose the certificate the
+# site is unreachable during that period rather than merely insecure.
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=86400" env=HTTPS
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "same-origin"
+</IfModule>
+
+# No browsing through folders
+Options -Indexes
+
+# Never hand out config or notes, not even if PHP is off for a moment
+<FilesMatch "\.(sql|md|json5|log|bak)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# manifest.json is a page asset and has to stay reachable
+<Files "manifest.json">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
+
+# Camera photos are big. Give uploads room; Plesk may still cap this lower.
+<IfModule mod_php.c>
+    php_value upload_max_filesize 12M
+    php_value post_max_size 60M
+</IfModule>

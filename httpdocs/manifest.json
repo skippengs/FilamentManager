@@ -1,0 +1,39 @@
+{
+    "name": "Filament",
+    "short_name": "Filament",
+    "description": "Which spools are in the cabinet, what is left on them, and what they look like.",
+    "start_url": "index.php",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0c0d12",
+    "theme_color": "#6544f5",
+    "lang": "en",
+    "icons": [
+        {
+            "src": "assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "assets/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Add a spool",
+            "short_name": "Add",
+            "url": "edit.php"
+        }
+    ]
+}

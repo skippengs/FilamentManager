@@ -1,0 +1,28 @@
+# Real settings: database credentials and the admin password hash.
+# Created on the server by install.php.
+httpdocs/inc/config.local.php
+
+# Uploaded spool photos. These belong on the server, not in the repo.
+httpdocs/uploads/*
+!httpdocs/uploads/.htaccess
+!httpdocs/uploads/.gitkeep
+
+# Local development environment (points at paths on this pc)
+.claude/
+
+# Editors
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-*
+
+# Windows / macOS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Temporary
+*.log
+*.bak
+*.tmp
+*~

@@ -1,0 +1,38 @@
+# Uploaded spool photos live here. They have to be readable by visitors,
+# so this folder is not blocked the way inc/ is. What it must never do is
+# run anything: if a file that is not really a picture ever lands here, it
+# should be handed out as bytes, not executed.
+
+Options -Indexes -ExecCGI
+
+# Switch the PHP handler off for this folder.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phps .cgi .pl .py
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phps
+
+# Under FPM the handler above is not enough, so refuse the files outright.
+<FilesMatch "(?i)\.(php[0-9s]?|phtml|phar|cgi|pl|py|sh|htaccess)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Photos never change once written, so let the browser keep them.
+<IfModule mod_headers.c>
+    <FilesMatch "(?i)\.(jpe?g|png|webp)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>

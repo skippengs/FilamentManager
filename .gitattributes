@@ -1,0 +1,9 @@
+# Normalise line endings: LF in the repo, CRLF locally on Windows.
+# Stops every Windows commit from showing whole files as changed.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
