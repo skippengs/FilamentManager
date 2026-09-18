@@ -9,7 +9,7 @@
  * old files.
  */
 
-const CACHE = 'filament-v2';
+const CACHE = 'filament-v3';
 
 const SHELL = [
     'assets/app.css',

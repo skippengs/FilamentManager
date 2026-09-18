@@ -595,10 +595,25 @@ $photos = $item['photos'] ?? [];
                     <input class="visually-hidden" type="file" id="library" name="photos[]"
                            accept="image/*" multiple data-photo-input>
                 </div>
-                <div class="previews" data-previews></div>
-                <p class="field-hint">
-                    Handy for spools without a brand on them. Up to <?= MAX_PHOTOS_PER_ITEM ?> per spool;
-                    <?= count($photos) ?> used so far. "Take a photo" opens the camera on a phone.
+
+                <?php
+                /*
+                 * A camera field holds one picture at a time, so taking a second
+                 * shot would throw the first one away. Script moves each photo
+                 * into this basket the moment it is taken, which leaves the
+                 * camera free for the next one. Without script the two fields
+                 * above still post on their own, one photo at a time.
+                 */
+                ?>
+                <input class="visually-hidden" type="file" name="photos[]" multiple data-photo-basket>
+
+                <div class="previews" data-previews
+                     data-photo-room="<?= MAX_PHOTOS_PER_ITEM - count($photos) ?>"></div>
+
+                <p class="field-hint" data-photo-hint>
+                    Handy for spools with no brand printed on them. Keep tapping
+                    "Take a photo" to add more &mdash; up to <?= MAX_PHOTOS_PER_ITEM ?> per spool,
+                    <?= count($photos) ?> used so far.
                 </p>
             <?php else: ?>
                 <p class="field-hint">This spool already has the maximum of <?= MAX_PHOTOS_PER_ITEM ?> photos.</p>

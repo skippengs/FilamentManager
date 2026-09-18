@@ -390,38 +390,109 @@
         });
     }
 
-    /* Shows what you just photographed, before it has been uploaded. */
-    function initPreviews() {
+    /*
+     * Collects the photos before they are uploaded, and shows them.
+     *
+     * A camera field holds exactly one picture, so shooting a second one
+     * silently replaced the first and you had to save and come back to add
+     * another. Every photo is moved into a basket field the moment it is
+     * taken, which empties the camera field for the next shot and lets the
+     * whole lot go up in one save.
+     */
+    function initPhotoBasket() {
         var box = $('[data-previews]');
+        var basket = $('[data-photo-basket]');
+        var hint = $('[data-photo-hint]');
         var inputs = $$('[data-photo-input]');
+
         if (!box || inputs.length === 0 || !window.FileReader) { return; }
+
+        // Rebuilding a FileList needs DataTransfer. Without it, fall back to
+        // the old one-photo-at-a-time behaviour rather than losing pictures.
+        var canCollect = basket && typeof DataTransfer === 'function';
+
+        try {
+            if (canCollect) { new DataTransfer(); }
+        } catch (e) {
+            canCollect = false;
+        }
+
+        var room = parseInt(box.getAttribute('data-photo-room'), 10);
+        if (isNaN(room)) { room = 6; }
+
+        var picked = [];
+
+        function sync() {
+            if (!canCollect) { return; }
+
+            var dt = new DataTransfer();
+            picked.forEach(function (file) { dt.items.add(file); });
+            basket.files = dt.files;
+        }
+
+        function say(message) {
+            if (!hint) { return; }
+            hint.textContent = message;
+        }
 
         function render() {
             box.innerHTML = '';
 
-            inputs.forEach(function (input) {
-                Array.prototype.forEach.call(input.files || [], function (file) {
-                    if (!/^image\//.test(file.type)) { return; }
+            picked.forEach(function (file, index) {
+                var figure = document.createElement('figure');
+                var img = document.createElement('img');
+                var remove = document.createElement('button');
 
-                    var figure = document.createElement('figure');
-                    var img = document.createElement('img');
-                    var caption = document.createElement('figcaption');
+                img.alt = '';
+                var reader = new FileReader();
+                reader.onload = function (e) { img.src = e.target.result; };
+                reader.readAsDataURL(file);
 
-                    img.alt = '';
-                    caption.textContent = file.name;
-
-                    var reader = new FileReader();
-                    reader.onload = function (e) { img.src = e.target.result; };
-                    reader.readAsDataURL(file);
-
-                    figure.appendChild(img);
-                    figure.appendChild(caption);
-                    box.appendChild(figure);
+                remove.type = 'button';
+                remove.className = 'preview-x';
+                remove.setAttribute('aria-label', 'Remove this photo');
+                remove.textContent = '×';
+                remove.addEventListener('click', function () {
+                    picked.splice(index, 1);
+                    sync();
+                    render();
                 });
+
+                figure.appendChild(img);
+                figure.appendChild(remove);
+                box.appendChild(figure);
             });
+
+            if (picked.length === 0) {
+                say('Keep tapping "Take a photo" to add more — room for ' + room + ' here.');
+            } else {
+                var left = room - picked.length;
+                say(picked.length + ' photo' + (picked.length === 1 ? '' : 's') + ' ready to upload'
+                    + (left > 0 ? ', room for ' + left + ' more.' : '. That is the maximum.'));
+            }
         }
 
-        inputs.forEach(function (input) { input.addEventListener('change', render); });
+        inputs.forEach(function (input) {
+            input.addEventListener('change', function () {
+                if (!canCollect) { return; }
+
+                Array.prototype.forEach.call(input.files || [], function (file) {
+                    if (!/^image\//.test(file.type)) { return; }
+                    if (picked.length >= room) { return; }
+                    picked.push(file);
+                });
+
+                // Emptying it matters twice over: the camera fires change
+                // again for the next shot, and these files are not posted a
+                // second time alongside the basket.
+                input.value = '';
+
+                sync();
+                render();
+            });
+        });
+
+        if (canCollect) { render(); }
     }
 
     /* A big upload over a slow line looks broken without this. */
@@ -453,7 +524,7 @@
         initStatusLink();
         initSourceLink();
         initQuickpick();
-        initPreviews();
+        initPhotoBasket();
         initSubmitState();
     });
 }());

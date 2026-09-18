@@ -1197,14 +1197,25 @@ input[type="range"]::-moz-range-thumb {
     border: 1px solid var(--border);
 }
 
-.previews figcaption {
-    margin-top: 4px;
-    font-size: 10.5px;
-    color: var(--text-faint);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.previews figure { position: relative; }
+
+.preview-x {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 2px solid var(--surface);
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
 }
+
+.preview-x:hover { background: var(--danger); color: #fff; }
 
 /* ---------- messages ---------- */
 
@@ -1342,6 +1353,13 @@ code {
     .form-actions .btn { flex: 1; }
 
     .detail-title h2 { font-size: 23px; }
+
+    /* Edit and Delete sit where a thumb actually lands: the bottom right,
+       not the far corner you have to shuffle the phone around to reach. */
+    .detail-actions {
+        justify-content: flex-end;
+        padding-top: 4px;
+    }
 }
 
 /* ---------- less movement, if that is what you asked the system for ---------- */
